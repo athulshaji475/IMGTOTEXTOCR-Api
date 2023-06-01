@@ -1,0 +1,53 @@
+const { createWorker } = require('tesseract.js');
+const express=require('express')
+const app=express()
+
+app.get('/',(req,res)=>{
+  try {
+
+    const filePath = 'https://c8.alamy.com/comp/E22C5F/image-of-car-number-plate-digitally-altered-by-switching-number-47-E22C5F.jpg';
+recognizeText(filePath)
+  .then((text) => {
+    console.log('Recognized Text:', text);
+    res.send(text)
+  })
+  
+    
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+//-----------------------------------
+
+function recognizeText(file) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const worker = createWorker({
+        logger: (m) => console.log(m), // Optional logger function
+      });
+
+      await worker.load();
+      await worker.loadLanguage('eng');
+      await worker.initialize('eng');
+      const { data: { text } } = await worker.recognize(file);
+      await worker.terminate();
+
+      resolve(text);
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+/*const filePath = `./Capture2.PNG`;
+recognizeText(filePath)
+  .then((text) => {
+    console.log('Recognized Text:', text);
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });*/
+
+  const port=process.env.PORT||5002
+  app.listen(port,()=>{console.log(`Running on port ${port}`)})
